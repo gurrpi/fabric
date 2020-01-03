@@ -1,0 +1,49 @@
+# Copyright the Hyperledger Fabric contributors. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: NIGHTLY-$(Date:yyyyMMdd)
+trigger: none
+pr: none
+
+schedules:
+    - cron: "0 0 * * *"
+      displayName: Daily midnight build
+      branches:
+        include:
+        - master
+        - releases/*
+      always: true
+
+variables:
+  - name: GOPATH
+    value: $(Agent.BuildDirectory)/go
+  - name: GOVER
+    value: 1.13.4
+
+stages:
+  - stage: BuildBinaries
+    dependsOn: []
+    displayName: "Build Fabric Binaries"
+    jobs:
+      - job: Build
+        pool:
+          vmImage: ubuntu-16.04
+        container: golang:$(GOVER)
+        strategy:
+          matrix:
+            Linux-amd64:
+              TARGET: linux-amd64
+            MacOS-amd64:
+              TARGET: darwin-amd64
+            Windows-amd64:
+              TARGET: windows-amd64
+        steps:
+          - checkout: self
+            path: 'go/src/github.com/hyperledger/fabric'
+            displayName: Checkout Fabric Code
+          - script: ./ci/scripts/create_binary_package.sh
+            displayName: Compile Binary and Create Tarball
+          - publish: nightly/$(TARGET)/hyperledger-fabric-$(TARGET)-$(Date:yyyyMMdd).tar.gz
+            artifact: hyperledger-fabric-$(TARGET)-$(Date:yyyyMMdd).tar.gz
+            displayName: Publish Release Artifact

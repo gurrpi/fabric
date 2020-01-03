@@ -8,4 +8,5 @@ make "release/${TARGET}"
 mkdir "release/${TARGET}/config"
 mv sampleconfig/*yaml "release/${TARGET}/config"
 cd "release/${TARGET}"
-tar -czvf "hyperledger-fabric-${TARGET}-${RELEASE}.tar.gz" bin config
+# TODO: Add conditional suffix for RELEASE/NIGHTLY/PUSH
+tar -czvf "hyperledger-fabric-${TARGET}-${Date:yyyyMMdd}.tar.gz" bin config
